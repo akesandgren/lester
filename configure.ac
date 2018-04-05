@@ -10,11 +10,13 @@ PKG_PROG_PKG_CONFIG()
 
 dnl We may be able to use older versions, but I have not verified that
 PKG_CHECK_MODULES([ext2fs], [ext2fs >= 1.42.7 com_err >= 1.42.7])
+PKG_CHECK_MODULES([jansson], [jansson])
 
 dnl Pull the needed libraries into LIBS (needed for the AC_LINK_IFELSE below)
 dnl These should never fail if the PKG_CHECK above passes
 AC_SEARCH_LIBS([com_err], [com_err])
 AC_SEARCH_LIBS([ext2fs_open2], [ext2fs])
+AC_SEARCH_LIBS([json_dumpf], [jansson])
 AC_SEARCH_LIBS([io_queue_init], [aio], [],
 	AC_MSG_ERROR([unable to find io_queue_init() -- install libaio-devel?]))
 

@@ -195,7 +195,7 @@ int main(int argc, char **argv)
 	static struct option options[] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "io-options", required_argument, NULL, 'O' },
-		{ "unix", required_argument, NULL, 'u' },
+		{ "unix", no_argument, NULL, 'u' },
 		{ "group-readahead", required_argument, NULL, 'g' },
 		{ "dir-readahead", required_argument, NULL, 'd' },
 		{ "output", required_argument, NULL, 'p' },
@@ -214,7 +214,7 @@ int main(int argc, char **argv)
 	}
 
 	for (;;) {
-		int opt = getopt_long(argc, argv, "hO:ug:d:o:m:A:a:vr:",
+		int opt = getopt_long(argc, argv, "hO:ug:d:o:m:A:a:vr:f:",
 							options, NULL);
 
 		if (opt == -1)

@@ -44,6 +44,7 @@ DEPENDENCIES
 libext2fs-devel		1.42.7 or newer (Lustre version preferred)
 libcom_err-devel	1.42.7 or newer (Lustre version preferred)
 libaio-devel
+jansson-devel
 
 Older e2fsprogs libraries may work, but have not been tested
 

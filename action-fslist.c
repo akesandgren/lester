@@ -13,14 +13,20 @@
 #include <errno.h>
 #include <string.h>
 #include <time.h>
+#include <jansson.h>
+
 
 enum {
 	FORMAT_NAME,
 	FORMAT_INUM,
 	FORMAT_EXTENDED,
 	FORMAT_LUSTRE,
+	FORMAT_JSON,
 	FORMAT_NE2SCAN,
 };
+
+int fslist_JSoutput(FILE*, ext2_ino_t, struct ext2_inode*, int, const char*, 
+					int, struct ea_info*, struct ea_info*); 
 
 static int fslist_format = FORMAT_NE2SCAN;
 static const char *fsname = "UNKNOWN";
@@ -100,6 +106,7 @@ static void fslist_help(void)
 {
 	fprintf(stderr, "Action arguments for fslist:\n");
 	fprintf(stderr, "    format=FORMAT\tOutput format\n");
+	fprintf(stderr, "\tjson\t\t    Full ne2scan output in JSON\n");
 	fprintf(stderr, "\tne2scan\t\t    Full ne2scan output (default)\n");
 	fprintf(stderr, "\tlustre\t\t    Include inode attributes and Lustre "
 			"objects\n");
@@ -166,6 +173,8 @@ static int fslist_init(const char *dev, int argc, const char **argv)
 				fslist_format = FORMAT_INUM;
 			else if (!strcmp(*argv, "format=name"))
 				fslist_format = FORMAT_NAME;
+			else if (!strcmp(*argv, "format=json"))
+				fslist_format = FORMAT_JSON;
 			else {
 				fprintf(stderr, "Unknown fslist format: %s\n",
 					*argv + 7);
@@ -257,6 +266,13 @@ static int fslist_output(FILE *f, ext2_ino_t ino, struct ext2_inode *inode,
 			 int offset, const char *name, int namelen,
 			 struct ea_info *lov, struct ea_info *lma)
 {
+
+	//there we check if we use JSON format and we "recover" if we do
+	//later we will chosse a proper way to use this
+	if (fslist_format == FORMAT_JSON) {
+		fslist_JSoutput(f, ino, inode, offset, name, namelen, lov, lma);
+		return;
+	}
 	if (fslist_format > FORMAT_INUM) {
 		fprintf(f, "%u|%u|%u|%u|%u|%o|%lu|%u", inode->i_atime,
 			inode->i_ctime, inode->i_mtime, inode_uid(*inode),
