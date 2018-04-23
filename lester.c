@@ -214,7 +214,7 @@ int main(int argc, char **argv)
 	}
 
 	for (;;) {
-		int opt = getopt_long(argc, argv, "hO:ug:d:o:m:A:a:vr:f:",
+		int opt = getopt_long(argc, argv, "hO:ug:d:o:m:A:a:vr:",
 							options, NULL);
 
 		if (opt == -1)

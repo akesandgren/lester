@@ -23,6 +23,7 @@ json_t *build_lma(struct ea_info *lma)
 	if (!lma)
 		return json_null();
 
+	lma_val = lma->value;
 	res = json_object();
 
 	insert_in(res, json_integer(lma_val->lma_self_fid.f_seq), "sequence");
@@ -40,8 +41,7 @@ json_t *build_osts_parts(struct ea_info *lov, struct ext2_inode *ino)
 	int cnt;
 	json_t *res, *objs;
 
-	res = json_array();
-	if(!lov || (!LINUX_S_ISDIR(ino->i_mode) && !LINUX_S_ISREG(ino->i_mode)))
+	if(!lov || !LINUX_S_ISREG(ino->i_mode))
 		return json_null();
 
 	lov1 = lov->value;
@@ -58,6 +58,8 @@ json_t *build_osts_parts(struct ea_info *lov, struct ext2_inode *ino)
 
 	if (!cnt)
 		return json_null();
+
+	res = json_array();
 
 	ost--;
 	objs = json_object();
