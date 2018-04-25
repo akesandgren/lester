@@ -34,7 +34,8 @@ static const char *user_note = "";
 static int show_dirs = 0;
 static int show_fid = 0;
 static int show_one = 0;
-static int show_nlink= 0;
+static int show_nlink = 0;
+static int show_blocks = 0;
 static const char *target_dev;
 static time_t cutoff_time;
 static int accessed_before;
@@ -143,6 +144,8 @@ static int fslist_init(const char *dev, int argc, const char **argv)
 			show_one = 1;
 		else if (!strcmp(*argv, "show_nlink"))
 			show_nlink = 1;
+		else if (!strcmp(*argv, "show_blocks"))
+			show_blocks = 1;
 		else if (!strncmp(*argv, "fs=", 3))
 			fsname = *argv + 3;
 		else if (!strncmp(*argv, "note=", 5))
@@ -284,6 +287,9 @@ static int fslist_output(FILE *f, ext2_ino_t ino, struct ext2_inode *inode,
 		
 		if (show_nlink)
 			fprintf(f, "|%d", inode->i_links_count);
+
+		if (show_blocks)
+			fprintf(f, "|%d", inode->i_blocks);
 
 		if (fslist_format >= FORMAT_LUSTRE) {
 			/* TODO deal with default stripe info on dirs */

@@ -112,6 +112,7 @@ int fslist_JSoutput(FILE *f, ext2_ino_t ino, struct ext2_inode *inode,
 	insert_in(res, json_string(path), "path");
 	//"options"
 	insert_in(res, json_integer(inode->i_links_count), "nlink");
+	insert_in(res, json_integer(inode->i_blocks), "blocks");
 	//ea
 	//anyway we can deal with those info in robinhood
 	insert_in(res, build_ea(lov, lma, inode), "ea");
