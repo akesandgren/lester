@@ -41,7 +41,8 @@ struct lov_mds_md_v1 {		/* LOV EA mds/wire data (little-endian) */
 	__u64 lmm_object_id;	/* LOV object ID */
 	__u64 lmm_object_gr;	/* LOV object group */
 	__u32 lmm_stripe_size;	/* size of stripe in bytes */
-	__u32 lmm_stripe_count;	/* num stripes in use for this object */
+	__u16 lmm_stripe_count;	/* num stripes in use for this object */
+	__u16 lmm_layout_gen; /*generation of this file*/
 	struct lov_ost_data_v1 lmm_objects[0]; /* per-stripe data */
 };
 
@@ -51,7 +52,8 @@ struct lov_mds_md_v3 {		/* LOV EA mds/wire data (little-endian) */
 	__u64 lmm_object_id;	/* LOV object ID */
 	__u64 lmm_object_gr;	/* LOV object group */
 	__u32 lmm_stripe_size;	/* size of stripe in bytes */
-	__u32 lmm_stripe_count;	/* num stripes in use for this object */
+	__u16 lmm_stripe_count;	/* num stripes in use for this object */
+	__u16 lmm_layout_gen; /*generation of this file*/
 	char  lmm_pool_name[MAXPOOLNAME]; /* must be 32bit aligned */
 	struct lov_ost_data_v1 lmm_objects[0]; /* per-stripe data */
 };
