@@ -1,6 +1,7 @@
 
 #include "lester.h"
 #include "lustre_lov.h"
+#include "lustre_attr.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -77,17 +78,41 @@ json_t *build_osts_parts(struct ea_info *lov, struct ext2_inode *ino)
 	return res;
 }
 
-json_t *build_ea(struct ea_info *lov, struct ea_info *lma, struct ext2_inode *ino)
+/*
+ * TODO : if the file is released we don't print lov attribute
+*/
+json_t *build_hsm(struct ea_info *hsm)
+{
+	json_t *res;
+	struct hsm_t *val;
+
+	if(!hsm)
+		return json_null();
+
+	val = hsm->value;
+	res = json_object();
+
+	insert_in(res, json_integer(val->unused), "unused");
+	insert_in(res, json_integer(val->flags), "flags");
+	insert_in(res, json_integer(val->archive_id), "archiveid");
+	insert_in(res, json_integer(val->archived_version), "archivedversion");
+
+	return res;
+}
+
+json_t *build_ea(struct ea_info *lov, struct ea_info *lma, struct ea_info *hsm,
+			struct ext2_inode *ino)
 {
 	json_t *res = json_object();
 	insert_in(res, build_lma(lma), "lma");
 	insert_in(res, build_osts_parts(lov, ino), "lov");
+	insert_in(res, build_hsm(hsm), "hsm");
 	return res;
 }
 
 int fslist_JSoutput(FILE *f, ext2_ino_t ino, struct ext2_inode *inode,
 			int offset, const char *name, int namelen,
-			struct ea_info *lov, struct ea_info *lma)
+			struct ea_info *lov, struct ea_info *lma, struct ea_info *hsm)
 {
 	json_t *res;
 	char *path;
@@ -115,7 +140,7 @@ int fslist_JSoutput(FILE *f, ext2_ino_t ino, struct ext2_inode *inode,
 	insert_in(res, json_integer(inode->i_blocks), "blocks");
 	//ea
 	//anyway we can deal with those info in robinhood
-	insert_in(res, build_ea(lov, lma, inode), "ea");
+	insert_in(res, build_ea(lov, lma, hsm, inode), "ea");
 
 	json_dumpf(res, f, 0);//maybe later we may use flags
 
