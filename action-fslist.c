@@ -26,7 +26,8 @@ enum {
 };
 
 int fslist_JSoutput(FILE*, ext2_ino_t, struct ext2_inode*, int, const char*, 
-					int, struct ea_info*, struct ea_info*, struct ea_info*); 
+					int, struct ea_info*, struct ea_info*, struct ea_info*,
+					struct ea_info*); 
 
 static int fslist_format = FORMAT_NE2SCAN;
 static const char *fsname = "UNKNOWN";
@@ -270,13 +271,15 @@ static int fslist_dscan_begin(void)
 
 static int fslist_output(FILE *f, ext2_ino_t ino, struct ext2_inode *inode,
 			 int offset, const char *name, int namelen,
-			 struct ea_info *lov, struct ea_info *lma, struct ea_info *hsm)
+			 struct ea_info *lov, struct ea_info *lma, struct ea_info *hsm,
+			 struct ea_info *nlink)
 {
 
 	//there we check if we use JSON format and we "recover" if we do
 	//later we will chosse a proper way to use this
 	if (fslist_format == FORMAT_JSON) {
-		fslist_JSoutput(f, ino, inode, offset, name, namelen, lov, lma, hsm);
+		fslist_JSoutput(f, ino, inode, offset, name, namelen, lov, lma, hsm,
+						nlink);
 		return;
 	}
 	if (fslist_format > FORMAT_INUM) {
@@ -319,6 +322,7 @@ static int fslist_dscan(ext2_ino_t ino, struct ext2_inode *inode,
 	struct ea_info *lov = NULL;
 	struct ea_info *lma = NULL;
 	struct ea_info *hsm = NULL;
+	struct ea_info *nlink = NULL;
 	struct ea_info *ea;
 	int requested = 0;
 	int offset;
@@ -352,8 +356,16 @@ static int fslist_dscan(ext2_ino_t ino, struct ext2_inode *inode,
 
 			if (ea->name_len == 3 && !strncmp(ea->name, "hsm", 3)) {
 				hsm = ea;
-				if(!ea->value) {
+				if (!ea->value) {
 					ea->requested = 1;
+					requested++;
+				}
+			}
+
+			if (ea->name_len == 4 && !strncmp(ea->name, "link", 4)) {
+				nlink = ea;
+				if (!ea->value) {
+					ea->requested =1;
 					requested++;
 				}
 			}
@@ -364,18 +376,19 @@ static int fslist_dscan(ext2_ino_t ino, struct ext2_inode *inode,
 		return ACTION_WANT_READ_ATTRS;
 
 	offset = build_path(parent, 0);
-	fslist_output(outfile, ino, inode, offset, name, namelen, lov, lma, hsm);
+	fslist_output(outfile, ino, inode, offset, name, namelen, lov, lma, hsm, 
+					nlink);
 
 	if (genhit) {
 		if (accessed_before && (inode->i_atime < cutoff_time &&
 					inode->i_mtime < cutoff_time &&
 					inode->i_ctime < cutoff_time)) {
 			fslist_output(genhit, ino, inode, offset, name,
-				      namelen, lov, lma, hsm);
+				      namelen, lov, lma, hsm, nlink);
 		} else if (newer_than && (inode->i_ctime >= cutoff_time ||
 					  inode->i_mtime >= cutoff_time)) {
 			fslist_output(genhit, ino, inode, offset, name,
-				      namelen, lov, lma, hsm);
+				      namelen, lov, lma, hsm, nlink);
 		}
 	}
 
