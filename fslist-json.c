@@ -126,6 +126,9 @@ json_t *build_linkea(struct ea_info *linkea)
 	struct linkea_data dat = { 0 };
 	struct lu_buf lb = { 0 };
 
+	if(linkea == NULL)
+		return json_null();
+
 	lb.lb_buf = linkea->value;
 	lb.lb_len = linkea->value_len;
 	dat.ld_buf = &lb;
@@ -144,6 +147,7 @@ json_t *build_linkea(struct ea_info *linkea)
 	len = dat.ld_reclen - sizeof(struct link_ea_entry);
 	temp = malloc(sizeof(char) * (len + 1));
 	temp = strncpy(temp, dat.ld_lee->lee_name, len);
+	temp[len] = '\0';
 	insert_in(obj, json_string(temp), "name");
 	memcpy(&fid, &dat.ld_lee->lee_parent_fid, sizeof(fid));
 	fid_be_to_cpu(&fid, &fid);
@@ -162,6 +166,7 @@ json_t *build_linkea(struct ea_info *linkea)
 		len = dat.ld_reclen - sizeof(struct link_ea_entry);
 		temp = malloc(sizeof(char) * (len + 1));
 		temp = strncpy(temp, dat.ld_lee->lee_name, len);
+		temp[len] = '\0';
 		insert_in(obj, json_string(temp) ,"name");
 		memcpy(&fid, &dat.ld_lee->lee_parent_fid, sizeof(fid));
 		fid_be_to_cpu(&fid, &fid);
