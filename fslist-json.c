@@ -84,14 +84,14 @@ json_t *build_osts_parts(struct ea_info *lov, struct ext2_inode *ino)
 	insert_in(objs, json_integer(ost[cnt].l_ost_idx), "ostID");
 	insert_in(objs, json_integer(ost[cnt].l_object_id), "objectID");
 	insert_in(objs, json_integer(ost[cnt].l_ost_gen), "ostgen");
-	json_array_append(res, objs);
+	json_array_append(tab, objs);
 	json_decref(objs);
 	while(--cnt) {
 		objs = json_object();
 		insert_in(objs, json_integer(ost[cnt].l_ost_idx), "ostID");
 		insert_in(objs, json_integer(ost[cnt].l_object_id), "objectID");
 		insert_in(objs, json_integer(ost[cnt].l_ost_gen), "ostgen");
-		json_array_append(res, objs);
+		json_array_append(tab, objs);
 		json_decref(objs);
 	}
 	insert_in(res, tab, "stripeparts");
