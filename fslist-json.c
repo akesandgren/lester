@@ -9,7 +9,8 @@
 
 
 #define HSM_RELEASED	0x8000000 /*with lfs hsm_state*/
-//#define HSM_RELEASE	1 << 12 /*in the lustre user api*/
+#define FID_TO_HEXA(res, fid)	sprintf("0x%lx:0x%x:0x%x", fid.f_seq, fid.f_oid, fid.f_ver)
+/*#define HSM_RELEASE	1 << 12 /*in the lustre user api*/
 
 void insert_in(json_t *j, json_t *val, char *key)
 {
@@ -20,12 +21,18 @@ void insert_in(json_t *j, json_t *val, char *key)
 json_t *build_fid(struct lu_fid f)
 {
 	json_t *res;
+	char temp[2048];
 	
-	res = json_object();
+	sprintf(temp, "0x%lx:0x%x:0x%x", f.f_seq, f.f_oid, f.f_ver);
+
+	res = json_string(temp);
+
+	
+	/*res = json_object();
 
 	insert_in(res, json_integer(f.f_seq), "sequence");
 	insert_in(res, json_integer(f.f_oid), "oid");
-	insert_in(res, json_integer(f.f_ver), "version");
+	insert_in(res, json_integer(f.f_ver), "version");*/
 
 	return res;
 }
@@ -51,6 +58,7 @@ json_t *build_osts_parts(struct ea_info *lov, struct ext2_inode *ino)
 	int cnt;
 	size_t size;
 	json_t *tab, *res, *objs;
+	char *ctemp;
 
 	if	(!lov || !LINUX_S_ISREG(ino->i_mode))
 		return json_null();
@@ -75,7 +83,11 @@ json_t *build_osts_parts(struct ea_info *lov, struct ext2_inode *ino)
 	res = json_object();
 	insert_in(res, json_integer(cnt), "stripecount");
 	insert_in(res, json_integer(size), "stripesize");
-
+	if (lov1->lmm_magic == LOV_MAGIC_V3) {
+		ctemp = strndup(lov3->lmm_pool_name, MAXPOOLNAME);
+		insert_in(res, json_string(ctemp), "poolname");
+		free(ctemp);
+	}
 
 	tab = json_array();
 
@@ -84,6 +96,7 @@ json_t *build_osts_parts(struct ea_info *lov, struct ext2_inode *ino)
 	insert_in(objs, json_integer(ost[cnt].l_ost_idx), "ostID");
 	insert_in(objs, json_integer(ost[cnt].l_object_id), "objectID");
 	insert_in(objs, json_integer(ost[cnt].l_ost_gen), "ostgen");
+	insert_in(objs, json_integer(ost[cnt].l_object_gr), "seq");
 	json_array_append(tab, objs);
 	json_decref(objs);
 	while(--cnt) {
@@ -91,6 +104,7 @@ json_t *build_osts_parts(struct ea_info *lov, struct ext2_inode *ino)
 		insert_in(objs, json_integer(ost[cnt].l_ost_idx), "ostID");
 		insert_in(objs, json_integer(ost[cnt].l_object_id), "objectID");
 		insert_in(objs, json_integer(ost[cnt].l_ost_gen), "ostgen");
+		insert_in(objs, json_integer(ost[cnt].l_object_gr), "seq");
 		json_array_append(tab, objs);
 		json_decref(objs);
 	}
